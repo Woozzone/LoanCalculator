@@ -11,6 +11,8 @@ const StyledButton = styled.button`
   cursor: pointer;
   letter-spacing: 0.03em;
   transition: background-color 0.2s ease;
+  opacity: ${(props) => props.disabled ? 0.5 : 1};
+  pointer-events: ${(props) => props.disabled ? 'none' : 'auto'};
 
   &:hover,
   &:focus {

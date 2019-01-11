@@ -1,122 +1,69 @@
+import { connect } from 'react-redux';
 import React from 'react';
-import styled from 'styled-components';
 
 // Components
-import Input from '../components/Input';
-import Button from '../components/Button';
-import Table from '../components/Table';
 import Form from '../components/Form';
+import Input from '../components/Input';
 
+// Actions
+import {
+  updateResult,
+  showResult,
+  updateLoanAmount,
+  updateLoanTerm,
+  updateLoanRate
+} from '../actions';
 
-const Reset = styled(Button)`
-  margin-top: 30px;
-`
+const LoanForm = ({
+  onSubmit,
+  updateAmount,
+  updateTerm,
+  updateRate,
+  isShown,
+  amount,
+  term,
+  rate
+}) => (
+  <Form
+    onSubmit={onSubmit}
+    isShown={isShown}
+    isDisabled={!(amount && term && rate)}
+  >
+    <Input label="Loan Amount, $" name="loanAmount" onChange={updateAmount} />
+    <Input label="Loan Term, Years" name="loanTerm" onChange={updateTerm} />
+    <Input label="Interest Rate, %" name="loanRate" onChange={updateRate} />
+  </Form>
+);
 
-class LoanForm extends React.Component {
-  constructor(props) {
-    super(props);
+const mapStateToProps = state => ({
+  isShown: !state.loanForm.hasResult,
+  amount: state.loanForm.sourceData.loanAmount,
+  term: state.loanForm.sourceData.loanTerm,
+  rate: state.loanForm.sourceData.loanRate
+});
 
-    this.state = {
-      hasResult: false,
-      results: {
-        amortized: {
-          paymentPerMonth: 0,
-          paymentTotal: 0,
-          paymentInterest: 0
-        }
-      },
-      sourceData: {
-        loanAmount: 0,
-        loanTerm: 0,
-        interestRate: 0
-      }
-    }
-
-    this.handleSubmit = this.handleSubmit.bind(this);
-    this.handleReset = this.handleReset.bind(this);
-    this.setSourceData = this.setSourceData.bind(this);
-    this.calculateAmortized = this.calculateAmortized.bind(this);
-  }
-
-  handleSubmit(e) {
+const mapDispatchToProps = dispatch => ({
+  onSubmit: e => {
     e.preventDefault();
-    
-    this.setState((state) => {
-      return this.calculateAmortized(state);
-    })
+
+    dispatch(updateResult());
+    dispatch(showResult());
+  },
+
+  updateAmount: e => {
+    dispatch(updateLoanAmount(parseInt(e.target.value, 10)));
+  },
+
+  updateTerm: e => {
+    dispatch(updateLoanTerm(parseInt(e.target.value, 10)));
+  },
+
+  updateRate: e => {
+    dispatch(updateLoanRate(parseInt(e.target.value, 10)));
   }
+});
 
-  handleReset() {
-    this.setState({
-      results: {},
-      hasResult: false
-    })
-  }
-
-  setSourceData(e) {
-    const target = e.target;
-
-    this.setState((state) => ({
-      sourceData: {
-        ...state.sourceData,
-        [target.name]: parseInt(target.value, 10)
-      }
-    }))
-  }
-
-  calculateAmortized(state) {
-    const { loanAmount, loanTerm, interestRate } = state.sourceData;
-    const i = interestRate / 1200;
-    const n = loanTerm * 12;
-    const k = (i * (1 + i)**n) / ((1 + i)**n - 1);
-
-    const paymentPerMonth = parseFloat((loanAmount * k).toFixed(2));
-    const paymentTotal = parseFloat((paymentPerMonth * loanTerm * 12).toFixed(2));
-    const paymentInterest = parseFloat((paymentTotal - loanAmount).toFixed(2));
-
-    return {
-      hasResult: true,
-      results: {
-        amortized: {
-          paymentPerMonth,
-          paymentTotal,
-          paymentInterest
-        }
-      }
-    }
-  }
-
-  render() {
-    if (this.state.hasResult) {
-      return (
-        <>
-          <Table>
-              <tr>
-                <td>Payment per Month</td>
-                <td>{this.state.results.amortized.paymentPerMonth} BYN</td>
-              </tr>
-              <tr>
-                <td>Total Payment</td>
-                <td>{this.state.results.amortized.paymentTotal} BYN</td>
-              </tr>
-              <tr>
-                <td>Total Interest</td>
-                <td>{this.state.results.amortized.paymentInterest} BYN</td>
-              </tr>
-          </Table>
-          <Reset type="text" onClick={this.handleReset}>Reset</Reset>
-        </>
-      )
-    }
-
-    return (
-      <Form onSubmit={this.handleSubmit}>
-        <Input label='Loan Amount, BYN' name='loanAmount' onChange={this.setSourceData} />
-        <Input label='Loan Term, Years' name='loanTerm' onChange={this.setSourceData} />
-        <Input label='Interest Rate, %' name='interestRate' onChange={this.setSourceData} />
-      </Form>
-    )
-  }
-}
-
-export default LoanForm;
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(LoanForm);

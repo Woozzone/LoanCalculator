@@ -1,8 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { createStore, applyMiddleware } from 'redux';
+import thunk from 'redux-thunk';
+import { Provider } from 'react-redux';
 import { Normalize } from 'styled-normalize';
 import { createGlobalStyle, ThemeProvider } from 'styled-components';
-
+import rootReducer from './reducers';
 
 // Components
 import Container from './components/Container';
@@ -10,6 +13,7 @@ import Card from './components/Card';
 
 // Containers
 import LoanForm from './containers/LoanForm';
+import ResultTable from './containers/ResultTable';
 
 // Theming
 const theme = {
@@ -25,7 +29,7 @@ const theme = {
     heading: '1.3rem',
     button: '0.8rem'
   }
-}
+};
 
 const GlobalStyles = createGlobalStyle`
   html {
@@ -45,8 +49,9 @@ const GlobalStyles = createGlobalStyle`
   #app {
     width: 100%;
   }
-`
+`;
 
+const store = createStore(rootReducer, applyMiddleware(thunk));
 
 const App = () => (
   <>
@@ -54,8 +59,9 @@ const App = () => (
     <GlobalStyles />
     <ThemeProvider theme={theme}>
       <Container>
-        <Card title='Loan Calculator'>
+        <Card title="Loan Calculator">
           <LoanForm />
+          <ResultTable />
         </Card>
       </Container>
     </ThemeProvider>
@@ -64,4 +70,9 @@ const App = () => (
 
 export default App;
 
-ReactDOM.render(<App />, document.getElementById('app'));
+ReactDOM.render(
+  <Provider store={store}>
+    <App />
+  </Provider>,
+  document.getElementById('app')
+);

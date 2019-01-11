@@ -6,10 +6,10 @@ const Submit = styled(Button)`
   margin-top: 15px;
 `
 
-const Form = ( props ) => (
-  <form {...props}>
-    {props.children}
-    <Submit type='submit'>Calculate</Submit>
+const Form = ( { onSubmit, children, isShown, isDisabled } ) => isShown && (
+  <form onSubmit={onSubmit}>
+    {children}
+    <Submit type='submit' disabled={isDisabled}>Calculate</Submit>
   </form>
 )
 
